@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Blue's Island</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700&family=Cormorant+Garamond:ital@1&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     EDIT ME: search "EDIT" comments to customize names, photos,
+     memory text, the speech, and playlist link.
+     ============================================================ */
+
+  :root{
+    --dark-pink: #C2185B;
+    --petal: #F7B6C8;
+    --blush: #FFF1F5;
+    --white: #FFFFFF;
+    --orange: #FF8A5B;
+    --yellow: #FFD166;
+    --silver: #D9D9D9;
+    --text: #3B2430;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin:0;
+    font-family:'Poppins', sans-serif;
+    color: var(--white);
+    background: var(--dark-pink);
+    overflow-x:hidden;
+  }
+
+  #sky{
+    position: fixed;
+    inset: 0;
+    z-index: -3;
+    background-image: url('hero-welcome.png');
+    background-size: cover;
+    background-position: center;
+  }
+  #overlay{
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: rgba(20,4,14,0.35);
+    transition: background 1.4s ease;
+    pointer-events: none;
+  }
+
+  /* ---- top progress indicator ---- */
+  #progress{
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 40;
+    display:flex;
+    justify-content:center;
+    gap: clamp(0.6rem, 4vw, 1.6rem);
+    padding: 0.9rem 0.6rem;
+    background: rgba(59,36,48,0.25);
+    backdrop-filter: blur(6px);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  #progress span{
+    color: rgba(255,255,255,0.55);
+    transition: color 0.4s ease;
+    cursor: pointer;
+  }
+  #progress span.active{ color: var(--white); }
+  #progress span.active::after{
+    content:"";
+    display:block;
+    height:3px;
+    border-radius: 2px;
+    background: var(--white);
+    margin-top: 4px;
+  }
+
+  section{
+    min-height: 100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding: 10vh 7vw 8vh;
+    position: relative;
+  }
+
+  #s-welcome{
+    justify-content: flex-end;
+    padding-bottom: 9vh;
+  }
+
+  .eyebrow{
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--yellow);
+    margin-bottom: 1.2rem;
+  }
+
+  .logo{
+    font-family:'Pacifico', cursive;
+    font-size: clamp(2.6rem, 13vw, 4.4rem);
+    line-height: 1;
+    margin: 0 0 1rem;
+    color: var(--white);
+    text-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  }
+
+  h2.heading{
+    font-family:'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.6rem, 6.5vw, 2.4rem);
+    margin: 0 0 1.2rem;
+    line-height: 1.2;
+  }
+
+  p.body-text{
+    font-size: clamp(1rem, 2.6vw, 1.1rem);
+    line-height: 1.7;
+    max-width: 460px;
+    color: rgba(255,255,255,0.92);
+    margin: 0 auto;
+  }
+
+  .scroll-cue{
+    margin-top: 2.6rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+    animation: bob 2.2s ease-in-out infinite;
+  }
+  @keyframes bob{ 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(8px);} }
+
+  .pink-btn{
+    font-family:'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.95rem 2.4rem;
+    border-radius: 40px;
+    border: none;
+    cursor: pointer;
+    background: var(--white);
+    color: var(--dark-pink);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    transition: transform 0.15s ease;
+  }
+  .pink-btn:hover{ transform: scale(1.04); }
+  .pink-btn:disabled{ opacity: 0.7; cursor: default; transform:none; }
+
+  /* ---- text message card ---- */
+  .phone-card{
+    background: var(--white);
+    color: var(--text);
+    border-radius: 22px;
+    padding: 2rem 1.8rem;
+    max-width: 360px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    text-align: left;
+  }
+  .phone-card .tag{
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--dark-pink);
+  }
+  .phone-card p{ font-size: 0.98rem; line-height: 1.6; margin: 0 0 0.9rem; color: var(--text); }
+  .phone-card p:last-child{ margin-bottom: 0; }
+
+  /* ---- our story ---- */
+  .gallery-grid{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    max-width: 440px;
+    width:100%;
+    margin-bottom: 2.2rem;
+  }
+  .photo{
+    aspect-ratio: 1;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.35), rgba(255,255,255,0.12));
+    border: 1px solid rgba(255,255,255,0.4);
+    display:flex; align-items:center; justify-content:center;
+    font-size: 0.75rem; color: rgba(255,255,255,0.75);
+    background-size: cover; background-position: center;
+  }
+
+  .memory-cards{
+    display:flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    max-width: 440px;
+    width:100%;
+  }
+  .memory-card{
+    background: var(--white);
+    color: var(--text);
+    border-radius: 14px;
+    padding: 1.2rem 1.4rem;
+    text-align:left;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  }
+  .memory-card .label{
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--dark-pink);
+    margin-bottom: 0.4rem;
+  }
+  .memory-card p{ margin:0; font-size: 0.95rem; line-height: 1.55; }
+
+  /* ---- vote ---- */
+  .couple-card{
+    background: var(--white);
+    color: var(--text);
+    border-radius: 18px;
+    padding: 1.8rem;
+    max-width: 380px;
+    width:100%;
+    box-shadow: 0 15px 45px rgba(0,0,0,0.18);
+  }
+  .couple-photo{
+    aspect-ratio: 4/3;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--petal), var(--orange));
+    margin-bottom: 1.1rem;
+    display:flex; align-items:center; justify-content:center;
+    color: rgba(255,255,255,0.85);
+    font-size: 0.85rem;
+    background-size: cover; background-position:center;
+  }
+  .couple-card .names{ font-weight: 700; font-size: 1.15rem; margin-bottom: 0.3rem; }
+  .couple-card .status{ font-size: 0.85rem; color: var(--dark-pink); font-weight: 600; margin-bottom: 1.3rem; }
+  .vote-btn{
+    width: 100%;
+    background: var(--dark-pink);
+    color: var(--white);
+    border: none;
+    padding: 1rem;
+    border-radius: 40px;
+    font-family:'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  #vote-results{ margin-top: 2rem; }
+  #vote-results.hidden{ display:none; }
+  .pct-bar-track{
+    width: 100%;
+    max-width: 380px;
+    height: 14px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 10px;
+    overflow:hidden;
+    margin: 1rem 0 0.6rem;
+  }
+  .pct-bar-fill{
+    height:100%;
+    width: 0%;
+    background: var(--yellow);
+    border-radius: 10px;
+    transition: width 1.6s cubic-bezier(.2,.8,.2,1);
+  }
+  .pct-label{ font-weight: 700; font-size: 1.6rem; }
+
+  /* ---- final ceremony ---- */
+  #s-final{ background: transparent; }
+  .speech{
+    max-width: 460px;
+    width: 100%;
+  }
+  .speech p{
+    font-size: clamp(1.05rem, 3vw, 1.25rem);
+    line-height: 1.75;
+    margin: 0 0 1.3rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .speech p.visible{ opacity: 1; transform: translateY(0); }
+  .speech p.emphasis{
+    font-family:'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(1.3rem, 4.2vw, 1.7rem);
+  }
+  .question{
+    font-weight: 700;
+    font-size: clamp(1.7rem, 7vw, 2.4rem);
+    margin: 1.6rem 0 2rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .question.visible{ opacity:1; transform: translateY(0); }
+  .final-buttons{
+    display:flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    align-items:center;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .final-buttons.visible{ opacity:1; transform: translateY(0); }
+
+  /* ---- celebration ---- */
+  #celebration{ display:none; }
+  #celebration.show{ display:flex; }
+  .final-photo{
+    aspect-ratio: 4/3;
+    max-width: 380px;
+    width: 100%;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--petal), var(--yellow));
+    margin: 1.6rem 0;
+    display:flex; align-items:center; justify-content:center;
+    color: rgba(255,255,255,0.85);
+    background-size: cover; background-position:center;
+  }
+  .screenshot-note{
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.75);
+    margin-top: 0.6rem;
+  }
+
+  /* ---- playlist ---- */
+  .playlist-embed{ width:100%; max-width: 400px; border-radius: 12px; overflow:hidden; }
+
+  canvas#confetti{
+    position: fixed; inset: 0; pointer-events:none; z-index: 50;
+  }
+</style>
+</head>
+<body>
+
+<div id="sky"></div>
+<div id="overlay"></div>
+<canvas id="confetti"></canvas>
+
+<div id="progress">
+  <span data-group="welcome" class="active" onclick="goTo('s-welcome')">Welcome</span>
+  <span data-group="story" onclick="goTo('s-story')">Our Story</span>
+  <span data-group="vote" onclick="goTo('s-vote')">Vote</span>
+  <span data-group="final" onclick="goTo('s-final')">Final Ceremony</span>
+</div>
+
+<!-- ================= WELCOME ================= -->
+<section id="s-welcome" data-sky="welcome" data-group="welcome">
+  <button class="pink-btn" onclick="goTo('s-text')">Enter the Villa</button>
+  <div class="scroll-cue" style="color:rgba(255,255,255,0.85)">Tonight, one Islander will receive a very important text.</div>
+</section>
+
+<!-- ================= I GOT A TEXT ================= -->
+<section id="s-text" data-sky="text" data-group="welcome">
+  <div class="phone-card">
+    <div class="tag">📱 I GOT A TEXT!</div>
+    <!-- EDIT: her name -->
+    <p><strong>Islander Blue,</strong></p>
+    <p>You have officially entered Blue's Island.</p>
+    <p>Tonight, you will revisit a special connection, cast an important vote, and attend the Final Ceremony.</p>
+    <p>Please continue to begin your journey.</p>
+  </div>
+  <button class="pink-btn" style="margin-top:2rem" onclick="goTo('s-story')">Begin Our Story</button>
+</section>
+
+<!-- ================= OUR STORY ================= -->
+<section id="s-story" data-sky="story" data-group="story">
+  <div class="eyebrow">Our Blue's Island Journey</div>
+  <p class="body-text" style="margin-bottom:2rem">
+    Some connections are unexpected. Some feel natural from the very beginning.
+    And some make you realize you're exactly where you're supposed to be.
+  </p>
+  <!-- EDIT: swap each photo div's style with background-image:url('your-photo.jpg') -->
+  <div class="gallery-grid">
+    <div class="photo" style="background-image:url('story-photo-1.jpg')"></div>
+    <div class="photo" style="background-image:url('story-photo-2.jpg')"></div>
+    <div class="photo" style="background-image:url('story-photo-3.jpg')"></div>
+    <div class="photo" style="background-image:url('story-photo-4.jpg')"></div>
+  </div>
+  <div class="memory-cards">
+    <!-- EDIT: personalize each memory -->
+    <div class="memory-card">
+      <div class="label">THE FIRST SPARK</div>
+      <p>It started with Peach Bellinis — I didn't know that night would be the beginning of something this good.</p>
+    </div>
+    <div class="memory-card">
+      <div class="label">THE CONNECTION</div>
+      <p>Every conversation, every laugh, and every moment brought us closer.</p>
+    </div>
+    <div class="memory-card">
+      <div class="label">THE DECISION</div>
+      <p>After everything we've shared, my choice has become clear.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= VOTE ================= -->
+<section id="s-vote" data-sky="vote" data-group="vote">
+  <div class="eyebrow">The Blue's Island Couple Vote</div>
+  <p class="body-text" style="margin-bottom:1.6rem">
+    The public has been asked to vote for the couple with the strongest connection.
+    Cast your vote below.
+  </p>
+  <div class="couple-card">
+    <div class="couple-photo" style="background-image:url('couple-photo.jpg')"></div>
+    <!-- EDIT: names -->
+    <div class="names">Stan + Blue</div>
+    <div class="status">Connection Status: Impossible to ignore</div>
+    <button class="vote-btn" id="vote-button" onclick="castVote()">❤️ Vote For This Couple</button>
+  </div>
+  <div id="vote-results" class="hidden">
+    <div class="pct-bar-track"><div class="pct-bar-fill" id="pct-fill"></div></div>
+    <div class="pct-label">100%</div>
+    <p class="body-text" style="margin-top:1rem">The public has spoken. This couple has been selected to attend the Blue's Island Final Ceremony.</p>
+    <button class="pink-btn" style="margin-top:1.6rem" onclick="goTo('s-final')">Continue to the Final</button>
+  </div>
+</section>
+
+<!-- ================= FINAL CEREMONY ================= -->
+<section id="s-final" data-sky="final" data-group="final">
+  <div class="eyebrow">The Final Ceremony</div>
+  <p class="body-text" style="margin-bottom:2rem">
+    The votes have been counted. The journey has reached its final moment.
+    One Islander must now make the most important choice of the night.
+  </p>
+  <button class="pink-btn" id="reveal-btn" onclick="revealSpeech()">Reveal the Final Choice</button>
+
+  <div class="speech" id="speech" style="margin-top:2rem">
+    <!-- EDIT: personalize the speech freely -->
+    <p data-line="1">I came into this experience already knowing that what we have is special.</p>
+    <p data-line="2">You make me laugh. You make me feel comfortable. And you make ordinary moments feel important.</p>
+    <p data-line="3">There may be a whole villa of possibilities, but I do not need another option.</p>
+    <p data-line="4" class="emphasis">I choose you.</p>
+    <p data-line="5">Not because of a vote. Not because of a competition. And not just for tonight.</p>
+    <p data-line="6">I choose you because you are the person I want beside me after we leave the island.</p>
+  </div>
+
+  <div class="question" id="question">Will you be my girlfriend?</div>
+  <div class="final-buttons" id="final-buttons">
+    <button class="pink-btn" onclick="acceptProposal()">Yes ❤️</button>
+    <button class="pink-btn" onclick="acceptProposal()">I Thought You'd Never Ask</button>
+  </div>
+</section>
+
+<!-- ================= CELEBRATION ================= -->
+<section id="celebration" data-sky="celebration" data-group="final">
+  <div class="eyebrow">It's Official!</div>
+  <h2 class="heading">Blue's Island has crowned its winning couple.</h2>
+  <!-- EDIT: names -->
+  <p class="body-text"><strong>Stan + Blue</strong><br>Officially exclusive.</p>
+  <div class="final-photo" style="background-image:url('final-photo.jpg')"></div>
+  <p class="body-text">Paradise found. ❤️</p>
+  <div class="screenshot-note">Take a screenshot to save our official results.</div>
+  <button class="pink-btn" style="margin-top:1.8rem" onclick="goTo('s-playlist')">View Our Winning Moment</button>
+</section>
+
+<!-- ================= PLAYLIST ================= -->
+<section id="s-playlist" data-sky="playlist" data-group="final">
+  <div class="eyebrow">The Soundtrack</div>
+  <div class="playlist-embed">
+    <!-- EDIT: swap src for your own Spotify playlist embed link -->
+    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DZ06evO1iznkj"
+      width="100%" height="352" frameborder="0" allowfullscreen=""
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+  </div>
+</section>
+
+<script>
+  // The hero photo stays fixed as one wallpaper behind every section.
+  // Only the dark overlay shifts, so it still feels lightest at the
+  // welcome and celebration, and moodiest during the final ceremony.
+  const overlayStops = {
+    welcome:     'rgba(20,4,14,0.25)',
+    text:        'rgba(20,4,14,0.35)',
+    story:       'rgba(20,4,14,0.4)',
+    vote:        'rgba(20,4,14,0.4)',
+    final:       'rgba(10,2,8,0.72)',
+    celebration: 'rgba(20,4,14,0.3)',
+    playlist:    'rgba(20,4,14,0.4)',
+  };
+
+  const overlay = document.getElementById('overlay');
+  const progressSpans = document.querySelectorAll('#progress span');
+
+  function goTo(id){ document.getElementById(id).scrollIntoView({behavior:'smooth'}); }
+
+  const sections = document.querySelectorAll('section[data-sky]');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const tint = overlayStops[entry.target.dataset.sky];
+        if (tint) overlay.style.background = tint;
+        const group = entry.target.dataset.group;
+        progressSpans.forEach(s => s.classList.toggle('active', s.dataset.group === group));
+      }
+    });
+  }, { threshold: 0.5 });
+  sections.forEach(s => observer.observe(s));
+
+  // ---------- vote ----------
+  function castVote(){
+    const btn = document.getElementById('vote-button');
+    btn.textContent = 'Vote Submitted ❤️';
+    btn.disabled = true;
+    setTimeout(() => {
+      document.getElementById('vote-results').classList.remove('hidden');
+      requestAnimationFrame(() => {
+        document.getElementById('pct-fill').style.width = '100%';
+      });
+    }, 800);
+  }
+
+  // ---------- speech reveal ----------
+  function revealSpeech(){
+    document.getElementById('reveal-btn').style.display = 'none';
+    const lines = document.querySelectorAll('#speech p');
+    lines.forEach((line, i) => {
+      setTimeout(() => line.classList.add('visible'), i * 900);
+    });
+    setTimeout(() => {
+      document.getElementById('question').classList.add('visible');
+    }, lines.length * 900 + 400);
+    setTimeout(() => {
+      document.getElementById('final-buttons').classList.add('visible');
+    }, lines.length * 900 + 900);
+  }
+
+  // ---------- accept ----------
+  function acceptProposal(){
+    const cel = document.getElementById('celebration');
+    cel.classList.add('show');
+    cel.scrollIntoView({ behavior:'smooth' });
+    burstConfetti();
+  }
+
+  // ---------- lightweight confetti / hearts ----------
+  const canvas = document.getElementById('confetti');
+  const ctx = canvas.getContext('2d');
+  function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const colors = ['#C2185B', '#FF8A5B', '#FFD166', '#F7B6C8', '#FFFFFF'];
+  let particles = [];
+
+  function burstConfetti(){
+    particles = [];
+    const count = 150;
+    for (let i = 0; i < count; i++){
+      particles.push({
+        x: canvas.width/2,
+        y: canvas.height * 0.6,
+        vx: (Math.random() - 0.5) * 14,
+        vy: (Math.random() * -14) - 4,
+        size: Math.random() * 8 + 4,
+        color: colors[Math.floor(Math.random()*colors.length)],
+        rotation: Math.random() * 360,
+        rotSpeed: (Math.random() - 0.5) * 10,
+        life: 0
+      });
+    }
+    requestAnimationFrame(animateConfetti);
+  }
+
+  function animateConfetti(){
+    ctx.clearRect(0,0,canvas.width, canvas.height);
+    let alive = false;
+    particles.forEach(p => {
+      p.vy += 0.35;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rotation += p.rotSpeed;
+      p.life++;
+      if (p.y < canvas.height + 20 && p.life < 260) alive = true;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation * Math.PI / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size * 0.6);
+      ctx.restore();
+    });
+    if (alive) requestAnimationFrame(animateConfetti);
+    else ctx.clearRect(0,0,canvas.width, canvas.height);
+  }
+</script>
+
+</body>
+</html>
